@@ -1,0 +1,1064 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Credit Card Expense Tracker</title>
+    <style>
+        :root {
+            --primary: #2563eb;
+            --primary-hover: #1d4ed8;
+            --danger: #dc2626;
+            --danger-hover: #b91c1c;
+            --success: #16a34a;
+            --bg: #f8fafc;
+            --card-bg: #ffffff;
+            --border: #e2e8f0;
+            --text: #1e293b;
+            --move-btn: #dbeafe;
+            --move-btn-text: #1e40af;
+            --highlight: #fef08a;
+            --highlight-border: #f59e0b;
+        }
+
+        body {
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            margin: 0;
+            padding: 12px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+            background: var(--card-bg);
+            padding: 12px 16px;
+            border-radius: 6px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        h1, h2, h3 { margin: 0; }
+        h1 { font-size: 1.5rem; }
+        h2 { font-size: 1.2rem; }
+
+        .header-stats {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .checked-total-badge {
+            background: #fef3c7;
+            border: 1px solid var(--highlight-border);
+            color: #92400e;
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-weight: 700;
+            font-size: 13px;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .unchecked-total-badge {
+            background: #ffe4e6;
+            border: 1px solid #f43f5e;
+            color: #9f1239;
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-weight: 700;
+            font-size: 13px;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .archive-selector-zone {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            background: #f1f5f9;
+            padding: 4px 10px;
+            border-radius: 4px;
+            border: 1px solid var(--border);
+        }
+
+        .archive-select {
+            font-size: 14px;
+            font-weight: 600;
+            padding: 2px 6px;
+            cursor: pointer;
+            border-color: #cbd5e1;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 6px;
+            margin-bottom: 12px;
+        }
+
+        .tab-btn {
+            padding: 6px 14px;
+            border: none;
+            background: #e2e8f0;
+            cursor: pointer;
+            border-radius: 4px;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .tab-btn.active {
+            background: var(--primary);
+            color: white;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .btn {
+            padding: 4px 10px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 500;
+            font-size: 13px;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .btn-primary { background: var(--primary); color: white; }
+        .btn-primary:hover { background: var(--primary-hover); }
+        .btn-danger { background: var(--danger); color: white; }
+        .btn-danger:hover { background: var(--danger-hover); }
+        .btn-success { background: var(--success); color: white; }
+        
+        .btn-move {
+            background: var(--move-btn);
+            color: var(--move-btn-text);
+            padding: 2px 8px;
+            font-weight: bold;
+            font-size: 12px;
+        }
+        .btn-move:hover {
+            background: #bfdbfe;
+        }
+
+        .card-section {
+            background: var(--card-bg);
+            border-radius: 6px;
+            padding: 12px;
+            margin-bottom: 12px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 6px;
+            margin-bottom: 8px;
+        }
+
+        .card-title-area {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .expense-item {
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            padding: 6px 8px;
+            margin-bottom: 4px;
+            background: #fdfdfd;
+        }
+
+        .expense-row, .sub-expense-row, .installment-row {
+            display: flex;
+            gap: 6px;
+            align-items: center;
+            flex-wrap: wrap;
+            margin-bottom: 0px;
+        }
+
+        .sub-expenses-container {
+            margin-left: 24px;
+            padding-left: 10px;
+            border-left: 2px dashed var(--border);
+            margin-top: 4px;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .hidden { display: none !important; }
+
+        input, select {
+            padding: 4px 6px;
+            border: 1px solid var(--border);
+            border-radius: 3px;
+            font-size: 13px;
+        }
+
+        input[type="checkbox"] {
+            width: 16px;
+            height: 16px;
+            cursor: pointer;
+            accent-color: var(--primary);
+        }
+
+        input[type="number"] { width: 90px; }
+        .merchant-input { width: 160px; }
+
+        .toggle-btn {
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 14px;
+            padding: 0 2px;
+        }
+
+        .card-toggle-btn {
+            font-size: 16px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 0;
+            color: var(--text);
+        }
+
+        .summary-box {
+            font-weight: bold;
+            font-size: 0.95em;
+            color: #334155;
+            background: #f1f5f9;
+            padding: 2px 8px;
+            border-radius: 4px;
+            border: 1px solid #cbd5e1;
+        }
+
+        .unclaimed-box {
+            font-weight: bold;
+            font-size: 0.95em;
+            color: #7c2d12;
+            background: #ffedd5;
+            padding: 2px 8px;
+            border-radius: 4px;
+            border: 1px solid #fdba74;
+        }
+
+        .card-unchecked-box {
+            font-weight: bold;
+            font-size: 0.95em;
+            color: #9f1239;
+            background: #ffe4e6;
+            padding: 2px 8px;
+            border-radius: 4px;
+            border: 1px solid #f43f5e;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            border-radius: 6px;
+            overflow: hidden;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        th, td {
+            padding: 8px 10px;
+            text-align: left;
+            border-bottom: 1px solid var(--border);
+            font-size: 14px;
+        }
+
+        th { background: #f1f5f9; }
+        
+        .autosave-indicator {
+            font-size: 11px;
+            color: #64748b;
+            font-style: italic;
+        }
+        
+        .danger-zone-btn {
+            background: #64748b;
+            color: white;
+            font-size: 11px;
+            padding: 3px 6px;
+            opacity: 0.6;
+        }
+        .danger-zone-btn:hover { opacity: 1; background: var(--danger); }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <div>
+            <h1>Credit Card Tracker</h1>
+            <div class="autosave-indicator" id="autosave-status">All changes saved locally</div>
+        </div>
+
+        <div class="header-stats">
+            <div class="checked-total-badge">
+                <span>Checked Total:</span>
+                <span id="global-checked-total">$0.00</span>
+            </div>
+
+            <div class="unchecked-total-badge">
+                <span>Unchecked Total:</span>
+                <span id="global-unchecked-total">$0.00</span>
+            </div>
+
+            <div class="archive-selector-zone">
+                <label for="archive-month" style="font-weight: 600; font-size: 13px; color: #475569;">Archive Month:</label>
+                <select id="archive-month" class="archive-select" onchange="changeArchiveMonth(this.value)">
+                </select>
+            </div>
+        </div>
+
+        <div style="display: flex; gap: 8px; align-items: center;">
+            <button class="btn danger-zone-btn" onclick="clearAllData()">Reset App Storage</button>
+            <button class="btn btn-success" onclick="downloadCSV()">Download CSV Report</button>
+        </div>
+    </header>
+
+    <div class="tabs">
+        <button class="tab-btn active" onclick="switchTab('expenses-tab')">Cards & Expenses</button>
+        <button class="tab-btn" onclick="switchTab('installments-tab')">Installments</button>
+    </div>
+
+    <!-- EXPENSES TAB -->
+    <div id="expenses-tab" class="tab-content active">
+        <div style="margin-bottom: 10px;">
+            <button class="btn btn-primary" onclick="addCard()">+ Add Custom Card</button>
+        </div>
+        <div id="cards-container"></div>
+    </div>
+
+    <!-- INSTALLMENTS TAB -->
+    <div id="installments-tab" class="tab-content">
+        <div class="card-section">
+            <div class="card-header">
+                <h2>Active Installments (Global)</h2>
+                <button class="btn btn-primary" onclick="addInstallment()">+ Add Installment</button>
+            </div>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Item Name</th>
+                        <th>Start Month</th>
+                        <th>Monthly Amount</th>
+                        <th>Tenure (Months)</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="installments-container"></tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script>
+    let archiveState = {
+        installments: [],
+        months: {}
+    };
+    let currentSelectedMonth = ""; 
+
+    const defaultCardNames = ["DBS Altitude", "UOB Lady's", "Amex"];
+    const monthsList = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+
+    window.onload = function() {
+        setupMonthDropdown();
+        loadStateFromLocalStorage();
+        render();
+    };
+
+    function setupMonthDropdown() {
+        const select = document.getElementById("archive-month");
+        if (!select) return;
+        
+        const now = new Date();
+        const currentYear = now.getFullYear();
+        const currentMonthNum = now.getMonth(); 
+        
+        const defaultKey = `${currentYear}-${String(currentMonthNum + 1).padStart(2, '0')}`;
+        currentSelectedMonth = defaultKey;
+
+        let optionsHTML = "";
+        for (let y = currentYear - 1; y <= currentYear + 1; y++) {
+            for (let m = 0; m < 12; m++) {
+                const monthVal = String(m + 1).padStart(2, '0');
+                const key = `${y}-${monthVal}`;
+                const displayLabel = `${monthsList[m]} ${y}`;
+                optionsHTML += `<option value="${key}" ${key === defaultKey ? 'selected' : ''}>${displayLabel}</option>`;
+            }
+        }
+        select.innerHTML = optionsHTML;
+    }
+
+    function createDefaultCards() {
+        return defaultCardNames.map((name, index) => ({
+            id: 'card_def_' + index + '_' + Math.random().toString(36).substr(2, 4),
+            name: name,
+            expanded: true,
+            expenses: []
+        }));
+    }
+
+    function loadStateFromLocalStorage() {
+        try {
+            const localData = localStorage.getItem('cc_tracker_archive_state');
+            if (localData) {
+                const parsed = JSON.parse(localData);
+                
+                if (parsed && parsed.months && Array.isArray(parsed.installments)) {
+                    archiveState = parsed;
+                } else if (parsed && typeof parsed === 'object') {
+                    archiveState = { installments: [], months: {} };
+                    Object.keys(parsed).forEach(key => {
+                        if (key !== 'installments' && key !== 'months') {
+                            archiveState.months[key] = { cards: parsed[key].cards || [] };
+                            if (Array.isArray(parsed[key].installments)) {
+                                parsed[key].installments.forEach(inst => {
+                                    if (!archiveState.installments.some(i => i.id === inst.id)) {
+                                        archiveState.installments.push(inst);
+                                    }
+                                });
+                            }
+                        }
+                    });
+                }
+            } else {
+                const legacyData = localStorage.getItem('cc_tracker_state');
+                if (legacyData) {
+                    const parsed = JSON.parse(legacyData);
+                    archiveState.months[currentSelectedMonth] = { cards: parsed.cards || [] };
+                    archiveState.installments = parsed.installments || [];
+                    localStorage.removeItem('cc_tracker_state');
+                }
+            }
+        } catch (e) {
+            console.error("Local data corrupted, initializing clear archive structure.", e);
+            archiveState = { installments: [], months: {} };
+        }
+        verifyCurrentMonthStructure();
+    }
+
+    function verifyCurrentMonthStructure() {
+        if (!archiveState.months) archiveState.months = {};
+        if (!Array.isArray(archiveState.installments)) archiveState.installments = [];
+        
+        if (!archiveState.months[currentSelectedMonth]) {
+            archiveState.months[currentSelectedMonth] = { cards: createDefaultCards() };
+        } else if (!archiveState.months[currentSelectedMonth].cards || archiveState.months[currentSelectedMonth].cards.length === 0) {
+            archiveState.months[currentSelectedMonth].cards = createDefaultCards();
+        }
+
+        const currentData = archiveState.months[currentSelectedMonth];
+        currentData.cards.forEach(card => {
+            card.expenses.forEach(exp => {
+                if (exp.checked === undefined) exp.checked = true;
+                if (exp.subExpenses) {
+                    exp.subExpenses.forEach(sub => {
+                        if (sub.checked === undefined) sub.checked = true;
+                    });
+                }
+            });
+        });
+    }
+
+    function getCurrentMonthData() {
+        verifyCurrentMonthStructure();
+        return archiveState.months[currentSelectedMonth];
+    }
+
+    function changeArchiveMonth(newMonthKey) {
+        currentSelectedMonth = newMonthKey;
+        verifyCurrentMonthStructure();
+        render();
+    }
+
+    function triggerAutosave() {
+        localStorage.setItem('cc_tracker_archive_state', JSON.stringify(archiveState));
+        const status = document.getElementById('autosave-status');
+        if (status) {
+            status.textContent = "Autosaving to Archive...";
+            setTimeout(() => {
+                status.textContent = "All changes saved locally";
+            }, 600);
+        }
+        updateCardAndCheckedTotals();
+    }
+
+    function switchTab(tabId) {
+        document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+        document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+        document.getElementById(tabId).classList.add('active');
+    }
+
+    function clearAllData() {
+        if (confirm("This will permanently wipe ALL archived months and installments from storage. Proceed?")) {
+            localStorage.removeItem('cc_tracker_archive_state');
+            archiveState = { installments: [], months: {} };
+            verifyCurrentMonthStructure();
+            render();
+        }
+    }
+
+    // --- Card Actions ---
+    function addCard() {
+        const name = prompt("Enter Card Name:");
+        if (!name || name.trim() === "") return;
+        
+        const data = getCurrentMonthData();
+        data.cards.push({
+            id: 'card_' + Date.now() + '_' + Math.random().toString(36).substr(2, 4),
+            name: name.trim(),
+            expanded: true,
+            expenses: []
+        });
+        triggerAutosave();
+        render();
+    }
+
+    function removeCard(cardId) {
+        if (confirm("Are you sure you want to remove this card and all its expenses?")) {
+            const data = getCurrentMonthData();
+            data.cards = data.cards.filter(c => c.id !== cardId);
+            triggerAutosave();
+            render();
+        }
+    }
+
+    function toggleCardExpand(cardId) {
+        const data = getCurrentMonthData();
+        const card = data.cards.find(c => c.id === cardId);
+        if (!card) return;
+        card.expanded = !card.expanded;
+        triggerAutosave();
+        render();
+    }
+
+    // --- Expense Actions ---
+    function addExpense(cardId) {
+        const data = getCurrentMonthData();
+        const card = data.cards.find(c => c.id === cardId);
+        if (!card) return;
+        card.expenses.push({
+            id: 'exp_' + Date.now() + '_' + Math.random().toString(36).substr(2, 4),
+            description: '',
+            amount: 0,
+            claimable: '',
+            checked: true,
+            expanded: true,
+            subExpenses: []
+        });
+        triggerAutosave();
+        render();
+    }
+
+    function removeExpense(cardId, expenseId) {
+        const data = getCurrentMonthData();
+        const card = data.cards.find(c => c.id === cardId);
+        if (!card) return;
+        card.expenses = card.expenses.filter(e => e.id !== expenseId);
+        triggerAutosave();
+        render();
+    }
+
+    function moveExpense(cardId, expenseId, direction) {
+        const data = getCurrentMonthData();
+        const card = data.cards.find(c => c.id === cardId);
+        if (!card) return;
+        
+        const index = card.expenses.findIndex(e => e.id === expenseId);
+        if (index === -1) return;
+        
+        const targetIndex = index + direction;
+        if (targetIndex < 0 || targetIndex >= card.expenses.length) return;
+        
+        const temp = card.expenses[index];
+        card.expenses[index] = card.expenses[targetIndex];
+        card.expenses[targetIndex] = temp;
+        
+        triggerAutosave();
+        render();
+    }
+
+    function updateExpense(cardId, expenseId, field, value) {
+        const data = getCurrentMonthData();
+        const card = data.cards.find(c => c.id === cardId);
+        if (!card) return;
+        const expense = card.expenses.find(e => e.id === expenseId);
+        if (!expense) return;
+        
+        if (field === 'amount') value = parseFloat(value) || 0;
+        expense[field] = value;
+        triggerAutosave();
+        updateCardAndCheckedTotals();
+    }
+
+    function toggleExpenseCheck(cardId, expenseId, isChecked) {
+        const data = getCurrentMonthData();
+        const card = data.cards.find(c => c.id === cardId);
+        if (!card) return;
+        const expense = card.expenses.find(e => e.id === expenseId);
+        if (!expense) return;
+
+        expense.checked = isChecked;
+
+        if (expense.subExpenses && expense.subExpenses.length > 0) {
+            expense.subExpenses.forEach(sub => sub.checked = isChecked);
+        }
+
+        triggerAutosave();
+        render();
+    }
+
+    // --- Sub Expense Actions ---
+    function addSubExpense(cardId, expenseId) {
+        const data = getCurrentMonthData();
+        const card = data.cards.find(c => c.id === cardId);
+        if (!card) return;
+        const expense = card.expenses.find(e => e.id === expenseId);
+        if (!expense) return;
+        
+        expense.subExpenses.push({
+            id: 'sub_' + Date.now() + '_' + Math.random().toString(36).substr(2, 4),
+            merchant: '',
+            amount: 0,
+            claimable: '',
+            checked: true
+        });
+        
+        expense.checked = expense.subExpenses.every(s => s.checked);
+
+        triggerAutosave();
+        render();
+    }
+
+    function removeSubExpense(cardId, expenseId, subId) {
+        const data = getCurrentMonthData();
+        const card = data.cards.find(c => c.id === cardId);
+        if (!card) return;
+        const expense = card.expenses.find(e => e.id === expenseId);
+        if (!expense) return;
+        
+        expense.subExpenses = expense.subExpenses.filter(s => s.id !== subId);
+        expense.amount = parseFloat(expense.subExpenses.reduce((sum, s) => sum + s.amount, 0).toFixed(2));
+        
+        if (expense.subExpenses.length > 0) {
+            expense.checked = expense.subExpenses.every(s => s.checked);
+        }
+
+        triggerAutosave();
+        render();
+    }
+
+    function updateSubExpense(cardId, expenseId, subId, field, value) {
+        const data = getCurrentMonthData();
+        const card = data.cards.find(c => c.id === cardId);
+        if (!card) return;
+        const expense = card.expenses.find(e => e.id === expenseId);
+        if (!expense) return;
+        const sub = expense.subExpenses.find(s => s.id === subId);
+        if (!sub) return;
+        
+        if (field === 'amount') value = parseFloat(value) || 0;
+        if (field === 'merchant') value = value.substring(0, 20);
+        
+        sub[field] = value;
+        triggerAutosave();
+
+        if (field === 'amount') {
+            expense.amount = parseFloat(expense.subExpenses.reduce((sum, s) => sum + s.amount, 0).toFixed(2));
+            const parentInput = document.getElementById(`exp-amt-${expenseId}`);
+            if (parentInput) parentInput.value = expense.amount.toFixed(2);
+        }
+        updateCardAndCheckedTotals();
+    }
+
+    function toggleSubExpenseCheck(cardId, expenseId, subId, isChecked) {
+        const data = getCurrentMonthData();
+        const card = data.cards.find(c => c.id === cardId);
+        if (!card) return;
+        const expense = card.expenses.find(e => e.id === expenseId);
+        if (!expense) return;
+        const sub = expense.subExpenses.find(s => s.id === subId);
+        if (!sub) return;
+
+        sub.checked = isChecked;
+        expense.checked = expense.subExpenses.every(s => s.checked);
+
+        triggerAutosave();
+        render();
+    }
+
+    function handleSubAmountBlur(cardId, expenseId, subId, value) {
+        const data = getCurrentMonthData();
+        const card = data.cards.find(c => c.id === cardId);
+        if (!card) return;
+        const expense = card.expenses.find(e => e.id === expenseId);
+        if (!expense) return;
+        const sub = expense.subExpenses.find(s => s.id === subId);
+        if (!sub) return;
+
+        const roundedVal = parseFloat(parseFloat(value).toFixed(2)) || 0;
+        sub.amount = roundedVal;
+        
+        expense.amount = parseFloat(expense.subExpenses.reduce((sum, s) => sum + s.amount, 0).toFixed(2));
+        
+        triggerAutosave();
+        render();
+    }
+
+    function toggleExpand(cardId, expenseId) {
+        const data = getCurrentMonthData();
+        const card = data.cards.find(c => c.id === cardId);
+        if (!card) return;
+        const expense = card.expenses.find(e => e.id === expenseId);
+        if (!expense) return;
+        expense.expanded = !expense.expanded;
+        triggerAutosave();
+        render();
+    }
+
+    // --- Installment Actions (Global across all months) ---
+    function addInstallment() {
+        verifyCurrentMonthStructure();
+        archiveState.installments.push({
+            id: 'inst_' + Date.now(),
+            name: '',
+            startMonth: 'Jan',
+            amount: 0,
+            months: '1'
+        });
+        triggerAutosave();
+        renderInstallments();
+    }
+
+    function removeInstallment(id) {
+        verifyCurrentMonthStructure();
+        archiveState.installments = archiveState.installments.filter(i => i.id !== id);
+        triggerAutosave();
+        renderInstallments();
+    }
+
+    function updateInstallment(id, field, value) {
+        verifyCurrentMonthStructure();
+        const inst = archiveState.installments.find(i => i.id === id);
+        if (!inst) return;
+        if (field === 'amount') value = parseFloat(value) || 0;
+        inst[field] = value;
+        triggerAutosave();
+    }
+
+    function calculateCardCheckedTotal(card) {
+        let total = 0;
+        card.expenses.forEach(exp => {
+            const hasSubs = exp.subExpenses && exp.subExpenses.length > 0;
+            if (!hasSubs) {
+                if (exp.checked) {
+                    total += exp.amount || 0;
+                }
+            } else {
+                exp.subExpenses.forEach(sub => {
+                    if (sub.checked) {
+                        total += sub.amount || 0;
+                    }
+                });
+            }
+        });
+        return total;
+    }
+
+    function calculateCardUncheckedTotal(card) {
+        let uncheckedTotal = 0;
+        card.expenses.forEach(exp => {
+            const hasSubs = exp.subExpenses && exp.subExpenses.length > 0;
+            if (!hasSubs) {
+                if (!exp.checked) {
+                    uncheckedTotal += exp.amount || 0;
+                }
+            } else {
+                exp.subExpenses.forEach(sub => {
+                    if (!sub.checked) {
+                        uncheckedTotal += sub.amount || 0;
+                    }
+                });
+            }
+        });
+        return uncheckedTotal;
+    }
+
+    function calculateCardUnclaimedTotal(card) {
+        let unclaimedTotal = 0;
+        card.expenses.forEach(exp => {
+            const hasSubs = exp.subExpenses && exp.subExpenses.length > 0;
+            if (!hasSubs) {
+                if (exp.checked && exp.claimable !== 'Claimable') {
+                    unclaimedTotal += exp.amount || 0;
+                }
+            } else {
+                exp.subExpenses.forEach(sub => {
+                    if (sub.checked && sub.claimable !== 'Claimable') {
+                        unclaimedTotal += sub.amount || 0;
+                    }
+                });
+            }
+        });
+        return unclaimedTotal;
+    }
+
+    function updateCardAndCheckedTotals() {
+        const data = getCurrentMonthData();
+        let globalCheckedTotal = 0;
+        let globalUncheckedTotal = 0;
+
+        data.cards.forEach(card => {
+            const cardTotal = calculateCardCheckedTotal(card);
+            const cardUncheckedTotal = calculateCardUncheckedTotal(card);
+            const unclaimedTotal = calculateCardUnclaimedTotal(card);
+
+            globalCheckedTotal += cardTotal;
+            globalUncheckedTotal += cardUncheckedTotal;
+
+            const totalSpan = document.getElementById(`card-total-${card.id}`);
+            if (totalSpan) totalSpan.textContent = cardTotal.toFixed(2);
+
+            const cardUncheckedSpan = document.getElementById(`card-unchecked-${card.id}`);
+            if (cardUncheckedSpan) cardUncheckedSpan.textContent = cardUncheckedTotal.toFixed(2);
+
+            const unclaimedSpan = document.getElementById(`card-unclaimed-${card.id}`);
+            if (unclaimedSpan) unclaimedSpan.textContent = unclaimedTotal.toFixed(2);
+        });
+
+        const checkedBadge = document.getElementById('global-checked-total');
+        if (checkedBadge) {
+            checkedBadge.textContent = `$${globalCheckedTotal.toFixed(2)}`;
+        }
+
+        const uncheckedBadge = document.getElementById('global-unchecked-total');
+        if (uncheckedBadge) {
+            uncheckedBadge.textContent = `$${globalUncheckedTotal.toFixed(2)}`;
+        }
+    }
+
+    // --- Render Logic ---
+    function render() {
+        const container = document.getElementById('cards-container');
+        if (!container) return;
+        container.innerHTML = '';
+
+        const data = getCurrentMonthData();
+
+        data.cards.forEach(card => {
+            const cardTotal = calculateCardCheckedTotal(card);
+            const cardUncheckedTotal = calculateCardUncheckedTotal(card);
+            const unclaimedTotal = calculateCardUnclaimedTotal(card);
+            const isExpanded = card.expanded !== false;
+            
+            const cardEl = document.createElement('div');
+            cardEl.className = 'card-section';
+            cardEl.innerHTML = `
+                <div class="card-header">
+                    <div class="card-title-area">
+                        <button class="card-toggle-btn" onclick="toggleCardExpand('${card.id}')">
+                            ${isExpanded ? '▼' : '►'}
+                        </button>
+                        <h2>${card.name}</h2>
+                        <span class="summary-box">Total: $ <span id="card-total-${card.id}">${cardTotal.toFixed(2)}</span></span>
+                        <span class="card-unchecked-box">Unchecked Total: $ <span id="card-unchecked-${card.id}">${cardUncheckedTotal.toFixed(2)}</span></span>
+                        <span class="unclaimed-box">Unclaimed: $ <span id="card-unclaimed-${card.id}">${unclaimedTotal.toFixed(2)}</span></span>
+                    </div>
+                    <button class="btn btn-danger" onclick="removeCard('${card.id}')">Delete Card</button>
+                </div>
+                <div id="card-contents-${card.id}" class="${isExpanded ? '' : 'hidden'}">
+                    <div id="expenses-list-${card.id}"></div>
+                    <button class="btn btn-primary" style="margin-top: 4px;" onclick="addExpense('${card.id}')">+ Add Expense</button>
+                </div>
+            `;
+            container.appendChild(cardEl);
+
+            if (!isExpanded) return;
+
+            const expList = cardEl.querySelector(`#expenses-list-${card.id}`);
+            
+            card.expenses.forEach((exp, idx) => {
+                const hasSubs = exp.subExpenses && exp.subExpenses.length > 0;
+                const expEl = document.createElement('div');
+                expEl.className = 'expense-item';
+                
+                const isFirst = idx === 0;
+                const isLast = idx === card.expenses.length - 1;
+
+                expEl.innerHTML = `
+                    <div class="expense-row">
+                        <input type="checkbox" ${exp.checked !== false ? 'checked' : ''} 
+                            onchange="toggleExpenseCheck('${card.id}', '${exp.id}', this.checked)" title="Uncheck to exclude from total">
+                        <button class="btn btn-move" onclick="moveExpense('${card.id}', '${exp.id}', -1)" ${isFirst ? 'disabled style="opacity:0.2; background:#e2e8f0; color:#94a3b8; cursor:not-allowed;"' : ''}>↑</button>
+                        <button class="btn btn-move" onclick="moveExpense('${card.id}', '${exp.id}', 1)" ${isLast ? 'disabled style="opacity:0.2; background:#e2e8f0; color:#94a3b8; cursor:not-allowed;"' : ''}>↓</button>
+                        <button class="toggle-btn" onclick="toggleExpand('${card.id}', '${exp.id}')">
+                            ${hasSubs ? (exp.expanded ? '▼' : '►') : '•'}
+                        </button>
+                        <input type="text" placeholder="Expense Description" value="${exp.description || ''}" 
+                            oninput="updateExpense('${card.id}', '${exp.id}', 'description', this.value)">
+                        <input type="number" id="exp-amt-${exp.id}" step="0.01" placeholder="Amount" value="${exp.amount ? exp.amount.toFixed(2) : '0.00'}" 
+                            ${hasSubs ? 'disabled' : ''} oninput="updateExpense('${card.id}', '${exp.id}', 'amount', this.value)">
+                        <select onchange="updateExpense('${card.id}', '${exp.id}', 'claimable', this.value)">
+                            <option value="" ${exp.claimable === '' ? 'selected' : ''}>[Empty]</option>
+                            <option value="Claimable" ${exp.claimable === 'Claimable' ? 'selected' : ''}>Claimable</option>
+                        </select>
+                        <button class="btn btn-primary" onclick="addSubExpense('${card.id}', '${exp.id}')">+ Add Sub-Expense</button>
+                        <button class="btn btn-danger" onclick="removeExpense('${card.id}', '${exp.id}')">Remove</button>
+                    </div>
+                    <div class="sub-expenses-container ${hasSubs && exp.expanded ? '' : 'hidden'}" id="subs-${exp.id}"></div>
+                `;
+                expList.appendChild(expEl);
+
+                if (hasSubs) {
+                    const subsContainer = expEl.querySelector(`#subs-${exp.id}`);
+                    exp.subExpenses.forEach(sub => {
+                        const subEl = document.createElement('div');
+                        subEl.className = 'sub-expense-row';
+                        subEl.innerHTML = `
+                            <input type="checkbox" ${sub.checked !== false ? 'checked' : ''} 
+                                onchange="toggleSubExpenseCheck('${card.id}', '${exp.id}', '${sub.id}', this.checked)" title="Uncheck to exclude from total">
+                            <input type="text" class="merchant-input" placeholder="Merchant" maxlength="20" value="${sub.merchant || ''}" 
+                                oninput="updateSubExpense('${card.id}', '${exp.id}', '${sub.id}', 'merchant', this.value)">
+                            <input type="number" step="0.01" placeholder="Amount" value="${sub.amount ? sub.amount.toFixed(2) : '0.00'}" 
+                                oninput="updateSubExpense('${card.id}', '${exp.id}', '${sub.id}', 'amount', this.value)"
+                                onchange="handleSubAmountBlur('${card.id}', '${exp.id}', '${sub.id}', this.value)"
+                                onblur="handleSubAmountBlur('${card.id}', '${exp.id}', '${sub.id}', this.value)">
+                            <select onchange="updateSubExpense('${card.id}', '${exp.id}', '${sub.id}', 'claimable', this.value)">
+                                <option value="" ${sub.claimable === '' ? 'selected' : ''}>[Empty]</option>
+                                <option value="Claimable" ${sub.claimable === 'Claimable' ? 'selected' : ''}>Claimable</option>
+                            </select>
+                            <button class="btn btn-danger" style="padding: 2px 6px; font-size: 11px;" onclick="removeSubExpense('${card.id}', '${exp.id}', '${sub.id}')">X</button>
+                        `;
+                        subsContainer.appendChild(subEl);
+                    });
+                }
+            });
+        });
+        renderInstallments();
+        updateCardAndCheckedTotals();
+    }
+
+    function renderInstallments() {
+        const container = document.getElementById('installments-container');
+        if (!container) return;
+        container.innerHTML = '';
+
+        verifyCurrentMonthStructure();
+
+        archiveState.installments.forEach(inst => {
+            const tr = document.createElement('tr');
+            
+            let optionsHTML = '';
+            for(let i=1; i<=12; i++) {
+                optionsHTML += `<option value="${i}" ${inst.months == i ? 'selected' : ''}>${i}</option>`;
+            }
+
+            let monthOptionsHTML = '';
+            monthsList.forEach(m => {
+                monthOptionsHTML += `<option value="${m}" ${inst.startMonth === m ? 'selected' : ''}>${m}</option>`;
+            });
+
+            tr.innerHTML = `
+                <td><input type="text" placeholder="Item Name" value="${inst.name || ''}" oninput="updateInstallment('${inst.id}', 'name', this.value)"></td>
+                <td>
+                    <select onchange="updateInstallment('${inst.id}', 'startMonth', this.value)">
+                        ${monthOptionsHTML}
+                    </select>
+                </td>
+                <td><input type="number" step="0.01" placeholder="Amount" value="${inst.amount || 0}" oninput="updateInstallment('${inst.id}', 'amount', this.value)"></td>
+                <td>
+                    <select onchange="updateInstallment('${inst.id}', 'months', this.value)">
+                        ${optionsHTML}
+                    </select>
+                </td>
+                <td><button class="btn btn-danger" onclick="removeInstallment('${inst.id}')">Delete</button></td>
+            `;
+            container.appendChild(tr);
+        });
+    }
+
+    function downloadCSV() {
+        let csvContent = "data:text/csv;charset=utf-8,";
+        csvContent += "SECTION,CARD NAME,EXPENSE/ITEM,ITEM AMOUNT,SUB TOTAL / CARD TOTAL\n";
+        
+        const data = getCurrentMonthData();
+
+        data.cards.forEach(card => {
+            let cardTotal = calculateCardCheckedTotal(card);
+            
+            if (!card.expenses || card.expenses.length === 0) {
+                csvContent += `Expenses,${escapeCSV(card.name)},,,0.00\n`;
+            } else {
+                card.expenses.forEach(exp => {
+                    const hasSubs = exp.subExpenses && exp.subExpenses.length > 0;
+                    
+                    if (!hasSubs) {
+                        if (exp.checked !== false) {
+                            csvContent += `Expenses,${escapeCSV(card.name)},${escapeCSV(exp.description)},,${exp.amount.toFixed(2)}\n`;
+                        }
+                    } else {
+                        const checkedSubTotal = exp.subExpenses.reduce((sum, s) => sum + (s.checked !== false ? s.amount : 0), 0);
+                        csvContent += `Expenses,${escapeCSV(card.name)},${escapeCSV(exp.description)} (Total Items Summary),,${checkedSubTotal.toFixed(2)}\n`;
+                        
+                        exp.subExpenses.forEach(sub => {
+                            if (sub.checked !== false) {
+                                const subLabel = sub.merchant ? `${exp.description} (${sub.merchant})` : exp.description;
+                                csvContent += `Expenses,${escapeCSV(card.name)},${escapeCSV(subLabel)},${sub.amount.toFixed(2)},\n`;
+                            }
+                        });
+                    }
+                });
+                
+                csvContent += `Expenses,${escapeCSV(card.name)},[Card Total Summary],,${cardTotal.toFixed(2)}\n`;
+            }
+        });
+
+        const encodedUri = encodeURI(csvContent);
+        const link = document.createElement("a");
+        link.setAttribute("href", encodedUri);
+        link.setAttribute("download", `Credit_Card_Report_${currentSelectedMonth}.csv`);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    }
+
+    function escapeCSV(text) {
+        if (!text) return '';
+        if (text.includes(',') || text.includes('"') || text.includes('\n')) {
+            return `"${text.replace(/"/g, '""')}"`;
+        }
+        return text;
+    }
+</script>
+
+</body>
+</html>
